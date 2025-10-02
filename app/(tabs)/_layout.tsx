@@ -1,57 +1,150 @@
-import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Tabs } from "expo-router";
+import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { View, Platform, Animated } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { TouchableOpacity } from "react-native";
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { useRouter } from "expo-router";
+import { wp } from "@/helpers/common";
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+export default function TabsLayout() {
+  const animationValues = useRef({
+    home: new Animated.Value(1),
+    todo: new Animated.Value(1),
+    posten: new Animated.Value(1),
+    leren: new Animated.Value(1),
+    profiel: new Animated.Value(1),
+  }).current;
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+    const navigation = useNavigation();
+    const router = useRouter();
+    const [isCreator, setIsCreator] = useState(false)
+
+  const animateTab = (tabName) => {
+    // Reset all animations
+    Object.keys(animationValues).forEach(key => {
+      Animated.spring(animationValues[key], {
+        toValue: key === tabName ? 1.2 : 1,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
+        tabBarShowLabel: false,
+        animation: 'shift',
+        headerShown: false,
+        tabBarStyle: {
+          position: "absolute",
+          // bottom: 25,
+          // left: 20,
+          // right: 20,
+          elevation: 0,
+          backgroundColor: "#1E1E1E",
+          // borderRadius: 25,
+          height: 75,
+          width: wp(100),
+          // marginBottom: 15,
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 5,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 5,
+          paddingBottom: Platform.OS === "android" ? 10 : 20,
+        },
+      }}
+      screenListeners={{
+        tabPress: (e) => {
+          animateTab(e.target.split('-')[0]);
+        },
+      }}
+    >
+<Tabs.Screen
+  name="home"
+  options={{ 
+    headerShown: false,
+    headerTransparent: true,
+    headerStyle: {backgroundColor: '#AEB6BF'},
+    headerLeft: () => (
+      <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
+        <Ionicons name="menu" size={24} color="black" style={{ marginLeft: 12 }} />
+      </TouchableOpacity>
+    ),
+    headerRight: () => (
+      <TouchableOpacity onPress={() => router.push("leren")}>
+        <Ionicons name="heart-outline" size={24} color="black" style={{ marginRight: 12 }} />
+      </TouchableOpacity>
+    ),
+          tabBarIcon: ({ focused }) => (
+            <Animated.View style={{ 
+              transform: [{ scale: animationValues.home }],
+              marginBottom: -20 
+            }}>
+              <Ionicons
+                name={focused ? "home" : "home-outline"}
+                size={24}
+                color={focused ? "#60A5FA" : "#60A5FA"}
+              />
+            </Animated.View>
+          ),
+  }}
+/>
+
+
       <Tabs.Screen
-        name="index"
+        name="posten"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+          headerTransparent: true,
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Animated.View style={{ 
+              transform: [{ scale: animationValues.todo }],
+              marginBottom: -20 
+            }}>
+              <Ionicons
+                name={focused ? "add-circle" : "add-circle-outline"}
+                size={34}
+                color={focused ? "#60A5FA" : "#60A5FA"}
+              />
+            </Animated.View>
           ),
         }}
       />
+
       <Tabs.Screen
-        name="two"
+        name="profiel"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+              headerTransparent: true,
+              headerShown: false,
+              headerStyle: {backgroundColor: '#AEB6BF'},
+              headerTitle: "my Idea",
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
+                  <Ionicons name="menu" size={24} color="black" style={{ marginLeft: 12 }} />
+                </TouchableOpacity>
+              ),
+              headerRight: () => (
+                <TouchableOpacity onPress={() => router.push("leren")}>
+                  <Ionicons name="heart-outline" size={24} color="black" style={{ marginRight: 12 }} />
+                </TouchableOpacity>
+              ),
+          tabBarIcon: ({ focused }) => (
+            <Animated.View style={{ 
+              transform: [{ scale: animationValues.profiel }],
+              marginBottom: -20 
+            }}>
+              <Ionicons
+                name={focused ? "person" : "person-outline"}
+                size={24}
+                color={focused ? "#60A5FA" : "#60A5FA"}
+              />
+            </Animated.View>
+          ),
         }}
       />
     </Tabs>
